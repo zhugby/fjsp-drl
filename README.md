@@ -23,7 +23,7 @@ Implementation of the IEEE TII paper [Flexible Job Shop Scheduling via Graph Neu
 * gym $\ge$ 0.18.0
 * numpy $\ge$ 1.19.5
 * pandas $\ge$ 1.1.5
-* visdom $\ge$ 0.1.8.9
+* tensorboard
 
 Note that pynvml is used in ```test.py``` to avoid excessive memory usage of GPU, please modify the code when using CPU.
 
@@ -57,6 +57,11 @@ python train.py
 ```
 
 Note that there should be a validation set of the corresponding size in ```./data_dev```.
+If ```train_paras.viz``` is enabled in ```config.json```, training writes TensorBoard logs under ```./save/train_*/tensorboard```. View them with:
+
+```
+python -m tensorboard --logdir ./save
+```
 
 ### test
 
@@ -70,4 +75,3 @@ Note that there should be model files (```*.pt```) in ```./model```.
 * https://github.com/zcaicaros/L2D
 * https://github.com/yd-kwon/MatNet
 * https://github.com/dmlc/dgl/tree/master/examples/pytorch/han
-

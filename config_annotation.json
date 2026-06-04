@@ -34,8 +34,8 @@
     "max_iterations": "Maximum number of iterations for training",
     "save_timestep": "Number of iterations to validate and save the network",
     "update_timestep": "Number of iterations to update the network",
-    "viz": "Turn on visdom to visualize the training process",
-    "viz_name": "Name of this visdom window",
+    "viz": "Turn on TensorBoard logging to visualize the training process",
+    "viz_name": "Name of this TensorBoard run",
     "minibatch_size": "batch size for updating",
     "parallel_iter": "Number of iterations to replace training instances"
   },

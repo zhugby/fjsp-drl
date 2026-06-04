@@ -9,7 +9,6 @@ import gym
 import pandas as pd
 import torch
 import numpy as np
-from visdom import Visdom
 
 import PPO_model
 from env.case_generator import CaseGenerator
@@ -22,6 +21,22 @@ def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
+
+def create_tensorboard_writer(enabled, save_path, train_paras):
+    if not enabled:
+        return None
+    try:
+        from torch.utils.tensorboard import SummaryWriter
+    except ImportError:
+        print("TensorBoard logging is enabled, but tensorboard is not installed.")
+        print("Install it with: pip install tensorboard")
+        print("Training will continue without TensorBoard logging.")
+        return None
+
+    log_dir = os.path.join(save_path, "tensorboard")
+    writer = SummaryWriter(log_dir=log_dir, comment=train_paras.get("viz_name", ""))
+    print("TensorBoard logging enabled: ", log_dir)
+    return writer
 
 def main():
     # PyTorch initialization
@@ -60,15 +75,12 @@ def main():
     best_models = deque()
     makespan_best = float('inf')
 
-    # Use visdom to visualize the training process
-    is_viz = train_paras["viz"]
-    if is_viz:
-        viz = Visdom(env=train_paras["viz_name"])
-
     # Generate data files and fill in the header
     str_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
     save_path = './save/train_{0}'.format(str_time)
     os.makedirs(save_path)
+    # Use TensorBoard to visualize the training process
+    tb_writer = create_tensorboard_writer(train_paras["viz"], save_path, train_paras)
     # Training curve storage path (average of validation set)
     writer_ave = pd.ExcelWriter('{0}/training_ave_{1}.xlsx'.format(save_path, str_time))
     # Training curve storage path (value of each validating instance)
@@ -125,11 +137,9 @@ def main():
             loss, reward = model.update(memories, env_paras, train_paras)
             print("reward: ", '%.3f' % reward, "; loss: ", '%.3f' % loss)
             memories.clear_memory()
-            if is_viz:
-                viz.line(X=np.array([i]), Y=np.array([reward]),
-                    win='window{}'.format(0), update='append', opts=dict(title='reward of envs'))
-                viz.line(X=np.array([i]), Y=np.array([loss]),
-                    win='window{}'.format(1), update='append', opts=dict(title='loss of envs'))  # deprecated
+            if tb_writer is not None:
+                tb_writer.add_scalar("train/reward", reward, i)
+                tb_writer.add_scalar("train/loss", loss, i)
 
         # if iter mod x = 0 then validate the policy (x = 10 in paper)
         if i % train_paras["save_timestep"] == 0:
@@ -149,10 +159,8 @@ def main():
                 best_models.append(save_file)
                 torch.save(model.policy.state_dict(), save_file)
 
-            if is_viz:
-                viz.line(
-                    X=np.array([i]), Y=np.array([vali_result.item()]),
-                    win='window{}'.format(2), update='append', opts=dict(title='makespan of valid'))
+            if tb_writer is not None:
+                tb_writer.add_scalar("valid/makespan", vali_result.item(), i)
 
     # Save the data of training curve to files
     data = pd.DataFrame(np.array(valid_results).transpose(), columns=["res"])
@@ -164,6 +172,8 @@ def main():
     data.to_excel(writer_100, sheet_name='Sheet1', index=False, startcol=1)
     writer_100.save()
     writer_100.close()
+    if tb_writer is not None:
+        tb_writer.close()
 
     print("total_time: ", time.time() - start_time)
 
