@@ -339,9 +339,7 @@ class FJSPEnv(gym.Env):
         self.time = e
 
         # Update partial schedule (state), variables and feature vectors
-        aa = self.machines_batch.transpose(1, 2)
-        aa[d, 0] = 1
-        self.machines_batch = aa.transpose(1, 2)
+        self.machines_batch[d, 0] = 1
 
         utiliz = self.machines_batch[:, :, 2]
         cur_time = self.time[:, None].expand_as(utiliz)
@@ -350,11 +348,14 @@ class FJSPEnv(gym.Env):
         self.feat_mas_batch[:, 2, :] = utiliz
 
         jobs = torch.where(d, self.machines_batch[:, :, 3].double(), -1.0).float()
-        jobs_index = np.argwhere(jobs.cpu() >= 0).to(self.device)
-        job_idxes = jobs[jobs_index[0], jobs_index[1]].long()
-        batch_idxes = jobs_index[0]
+        jobs_index = torch.nonzero(jobs >= 0, as_tuple=False)
 
-        self.mask_job_procing_batch[batch_idxes, job_idxes] = False
+        if jobs_index.numel() > 0:
+            batch_idxes = jobs_index[:, 0]
+            ma_idxes = jobs_index[:, 1]
+            job_idxes = jobs[batch_idxes, ma_idxes].long()
+
+            self.mask_job_procing_batch[batch_idxes, job_idxes] = False
         self.mask_ma_procing_batch[d] = False
         self.mask_job_finish_batch = torch.where(self.ope_step_batch == self.end_ope_biases_batch + 1,
                                                  True, self.mask_job_finish_batch)
