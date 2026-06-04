@@ -5,12 +5,12 @@ import random
 import time
 from collections import deque
 
-import gym
 import pandas as pd
 import torch
 import numpy as np
 
 import PPO_model
+from env import make_fjsp_env
 from env.case_generator import CaseGenerator
 from validate import validate, get_validate_env
 
@@ -105,7 +105,7 @@ def main():
             # \mathcal{B} instances use consistent operations to speed up training
             nums_ope = [random.randint(opes_per_job_min, opes_per_job_max) for _ in range(num_jobs)]
             case = CaseGenerator(num_jobs, num_mas, opes_per_job_min, opes_per_job_max, nums_ope=nums_ope)
-            env = gym.make('fjsp-v0', case=case, env_paras=env_paras)
+            env = make_fjsp_env(case=case, env_paras=env_paras)
             print('num_job: ', num_jobs, '\tnum_mas: ', num_mas, '\tnum_opes: ', sum(nums_ope))
 
         # Get state and completion signal

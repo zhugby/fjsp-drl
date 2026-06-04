@@ -4,13 +4,13 @@ import os
 import random
 import time as time
 
-import gym
 import pandas as pd
 import torch
 import numpy as np
 
 import pynvml
 import PPO_model
+from env import make_fjsp_env
 from env.load_data import nums_detec
 
 def setup_seed(seed):
@@ -127,11 +127,11 @@ def main():
                     envs.clear()
                 # DRL-S, each env contains multiple (=num_sample) copies of one instance
                 if test_paras["sample"]:
-                    env = gym.make('fjsp-v0', case=[test_file] * test_paras["num_sample"],
-                                   env_paras=env_test_paras, data_source='file')
+                    env = make_fjsp_env(case=[test_file] * test_paras["num_sample"],
+                                        env_paras=env_test_paras, data_source='file')
                 # DRL-G, each env contains one instance
                 else:
-                    env = gym.make('fjsp-v0', case=[test_file], env_paras=env_test_paras, data_source='file')
+                    env = make_fjsp_env(case=[test_file], env_paras=env_test_paras, data_source='file')
                 envs.append(copy.deepcopy(env))
                 print("Create env[{0}]".format(i_ins))
 

@@ -1,5 +1,4 @@
-import gym
-import env
+from env import make_fjsp_env
 import PPO_model
 import torch
 import time
@@ -14,7 +13,7 @@ def get_validate_env(env_paras):
     valid_data_files = os.listdir(file_path)
     for i in range(len(valid_data_files)):
         valid_data_files[i] = file_path+valid_data_files[i]
-    env = gym.make('fjsp-v0', case=valid_data_files, env_paras=env_paras, data_source='file')
+    env = make_fjsp_env(case=valid_data_files, env_paras=env_paras, data_source='file')
     return env
 
 def validate(env_paras, env, model_policy):
