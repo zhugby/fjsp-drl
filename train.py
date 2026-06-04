@@ -89,11 +89,11 @@ def main():
     valid_results_100 = []
     data_file = pd.DataFrame(np.arange(10, 1010, 10), columns=["iterations"])
     data_file.to_excel(writer_ave, sheet_name='Sheet1', index=False)
-    writer_ave.save()
+   # writer_ave.save()
     writer_ave.close()
     data_file = pd.DataFrame(np.arange(10, 1010, 10), columns=["iterations"])
     data_file.to_excel(writer_100, sheet_name='Sheet1', index=False)
-    writer_100.save()
+   # writer_100.save()
     writer_100.close()
 
     # Start training iteration
@@ -165,12 +165,12 @@ def main():
     # Save the data of training curve to files
     data = pd.DataFrame(np.array(valid_results).transpose(), columns=["res"])
     data.to_excel(writer_ave, sheet_name='Sheet1', index=False, startcol=1)
-    writer_ave.save()
+   # writer_ave.save()
     writer_ave.close()
     column = [i_col for i_col in range(100)]
     data = pd.DataFrame(np.array(torch.stack(valid_results_100, dim=0).to('cpu')), columns=column)
     data.to_excel(writer_100, sheet_name='Sheet1', index=False, startcol=1)
-    writer_100.save()
+   # writer_100.save()
     writer_100.close()
     if tb_writer is not None:
         tb_writer.close()
